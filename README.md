@@ -123,9 +123,7 @@ Modify the ImagePath Value,Double-click on ImagePath.
 
 ---
 
-## **Mssql Metrics **
-
-## 📊 MSSQL Monitoring Metrics Overview
+##  MSSQL Monitoring Metrics 
 
 | **Category**                     | **Metric Description**                                                                                                                | **Purpose / Insight**                                                                                           |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
@@ -140,3 +138,5 @@ Modify the ImagePath Value,Double-click on ImagePath.
 | **9. KPI - Memory**              | **Overall Memory Usage (Committed & Free)**                                                                                           | Monitors SQL Server memory allocation and helps identify memory pressure or leaks.                              |
 | **10. KPI - CPU**                | **CPU Usage & CPU Load per Process**                                                                                                  | Evaluates CPU consumption by SQL Server and related services to identify overutilization or idle patterns.      |
 | **11. SRV - General Statistics** | **Database Health, Deadlocks, Network, Storage, Logins/Logouts, Connection Reset, Lock Waits, TempDB Free Space, Active Temp Tables** | Offers a high-level operational view of server performance and stability, covering all major resource areas.    |
+
+---
