@@ -140,3 +140,5 @@ Modify the ImagePath Value,Double-click on ImagePath.
 | **11. SRV - General Statistics** | **Database Health, Deadlocks, Network, Storage, Logins/Logouts, Connection Reset, Lock Waits, TempDB Free Space, Active Temp Tables** | Offers a high-level operational view of server performance and stability, covering all major resource areas.    |
 
 ---
+<img width="1365" height="642" alt="Screenshot 2025-11-11 082458" src="https://github.com/user-attachments/assets/afd0b16b-0563-4422-9d43-a7cc8dd36fb8" />
+
