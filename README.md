@@ -1,4 +1,4 @@
-# window_exporter_setup
+
 
 # Monitoring MSSQL on Windows Server  
 ### A Guide to Maximizing Database Performance  
