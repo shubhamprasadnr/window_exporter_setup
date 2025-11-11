@@ -1,4 +1,4 @@
-
+# window_exporter_setup
 
 # Monitoring MSSQL on Windows Server  
 ### A Guide to Maximizing Database Performance  
@@ -34,7 +34,23 @@ Before starting, ensure the following prerequisites are met:
 
 ---
 
+##  **Installation and Setup of MSSQL**
 
+### **Steps:**
+
+1. Go to the [Microsoft SQL Server official download page](https://www.microsoft.com/en-us/sql-server/sql-server-downloads)  
+2. Under **SQL Server 2022 Developer**, click **Download now**  
+
+During installation:
+
+- Choose **Basic** installation type  
+- Accept license terms  
+- Click **Install**  
+- Wait for **10–20 minutes** (installation runs silently)  
+- Keep the **default instance name** or rename if desired  
+- Once done, click **Connect**  
+
+---
 
 ##  **Install SQL Server Management Studio (SSMS)**
 
@@ -123,22 +139,111 @@ Modify the ImagePath Value,Double-click on ImagePath.
 
 ---
 
-##  MSSQL Monitoring Metrics 
+##  Prometheus and Grafana Setup on Ubuntu
 
-| **Category**                     | **Metric Description**                                                                                                                | **Purpose / Insight**                                                                                           |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| **Networking**                | **Network Traffic & Hourly Usage**                                                                                                    | Tracks incoming and outgoing traffic to monitor network throughput and identify congestion or latency.          |
-| **Storage**                   | **Used Space & Available Space**                                                                                                      | Monitors disk utilization and available storage capacity to prevent database outages due to full disks.         |
-| **Lock Statistics**           | **Lock Wait Time & Lock Timeout**                                                                                                     | Indicates database contention; high lock waits may point to performance bottlenecks in queries or transactions. |
-| **Database Log Used**         | **Transaction Log Usage**                                                                                                             | Tracks how much of the SQL transaction log file is currently used to avoid log file overflow.                   |
-| **Database Logs**             | **Log Pool Activities & Log Bytes**                                                                                                   | Measures the rate of log generation and log buffer utilization, useful for understanding transaction volume.    |
-| **Database Latency**          | **Fetch / DLC Latency & Peak DLC Latency**                                                                                            | Reflects how long database operations take to fetch or commit data; helps identify performance degradation.     |
-| **Database Size Trend**       | **Database Row Size & Log Size**                                                                                                      | Displays growth trends of data and log files over time to assist in capacity planning.                          |
-| **Performance Counters**      | **SQL Server Activity, Database Activity, Buffer Cache, Disk I/O, Memory Manager, Lock Requests, Ratios**                             | Provides deep insight into database engine performance, memory utilization, and buffer cache efficiency.        |
-| **Memory**              | **Overall Memory Usage (Committed & Free)**                                                                                           | Monitors SQL Server memory allocation and helps identify memory pressure or leaks.                              |
-| **CPU**                | **CPU Usage & CPU Load per Process**                                                                                                  | Evaluates CPU consumption by SQL Server and related services to identify overutilization or idle patterns.      |
-| **General Statistics** | **Database Health, Deadlocks, Network, Storage, Logins/Logouts, Connection Reset, Lock Waits, TempDB Free Space, Active Temp Tables** | Offers a high-level operational view of server performance and stability, covering all major resource areas.    |
+This Proof of Concept (POC) demonstrates the installation and setup of **Prometheus** and **Grafana** for system monitoring and visualization on an Ubuntu machine.
 
 ---
-<img width="1365" height="642" alt="Screenshot 2025-11-11 082458" src="https://github.com/user-attachments/assets/afd0b16b-0563-4422-9d43-a7cc8dd36fb8" />
+
+###  Step 1: Update Your System
+
+```bash
+sudo apt update -y && sudo apt upgrade -y
+```
+
+### Step 2: **Install Prometheus**
+
+2.1 **Download Prometheus**
+```bash
+wget https://github.com/prometheus/prometheus/releases/download/v3.5.0/prometheus-3.5.0.linux-amd64.tar.gz
+```
+2.2 **Extract and Move Binaries**
+```bash
+tar xvf prometheus-3.5.0.linux-amd64.tar.gz
+mv prometheus-3.5.0.linux-amd64 /home/ubuntu/prometheus
+```
+
+### Step 3: **Configure Prometheus**
+
+- Edit the Prometheus configuration file:
+```bash
+sudo nano prometheus/prometheus.yml
+```
+- Add the following configuration:
+
+```bash
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'Mssql_metrics'
+    static_configs:
+      - targets: ['<privateip>:9090']
+
+```
+- Command to run Prometheus 
+```bash
+ ./prometheus --config.file=prometheus.yml
+ ```
+
+  - Press Open your browser and navigate to:
+ [http://PublicIp:9090/targets](http://PublicIp:9090/targets)
+
+<img width="1366" height="768" alt="Screenshot (14)" src="https://github.com/user-attachments/assets/375314ac-7ba4-484e-83c6-b425f92b7654" />
+
+<img width="1366" height="768" alt="Screenshot (15)" src="https://github.com/user-attachments/assets/13b6203e-9416-4ded-9185-838d22e5a3f5" />
+
+
+## Install Grafana
+
+### 1. **Install Grafana from Official Repository**
+``` bash
+sudo apt install -y apt-transport-https software-properties-common wget
+wget -q -O - https://packages.grafana.com/gpg.key | sudo apt-key add -
+echo "deb https://packages.grafana.com/oss/deb stable main" | sudo tee -a /etc/apt/sources.list.d/grafana.list
+sudo apt update
+sudo apt install grafana -y
+```
+
+### 2. **Start and Enable Grafana**
+```bash
+sudo systemctl start grafana-server
+sudo systemctl enable grafana-server
+sudo systemctl status grafana-server
+```
+
+✅ Access Grafana:
+👉 http://<publicip>:3000
+
+**Default Credentials:
+Username: admin
+Password: admin**
+
+### 3. **Add Prometheus as a Data Source in Grafana**
+
+   - Go to Grafana → Connections → Data Sources → Add data source
+
+   - Choose Prometheus
+
+   - Set URL: http://publicip:9090
+
+   - Click Save & Test
+
+### 4. **Import a Dashboard**
+
+   - Press You can import a prebuilt Grafana dashboard for Prometheus (e.g., Dashboard ID 15024):
+
+   - Press Go to Dashboard → Import
+
+   - Press Enter the ID (e.g., 1860)
+
+   - Press Click Load
+
+   - Press Select Prometheus as the data source
+
+   - Press Click Import
+
+✅ You’ll now see CPU, memory, and network and Mssql metrics visualized in Grafana.
+
+---
 
