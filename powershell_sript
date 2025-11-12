@@ -1,0 +1,123 @@
+<#
+.SYNOPSIS
+Automates setup of MSSQL, SSMS, and Prometheus Windows Exporter using sc.exe.
+Creates the Windows Exporter service and configures it to start automatically.
+#>
+
+# ------------------------------
+# Configuration Variables
+# ------------------------------
+$MSSQLInstallerUrl = "https://go.microsoft.com/fwlink/p/?linkid=2215158&clcid=0x4009&culture=en-in&country=in"
+$SSMSInstallerUrl  = "https://aka.ms/ssms/22/release/vs_SSMS.exe"
+$WindowsExporterUrl = "https://github.com/prometheus-community/windows_exporter/releases/download/v0.31.3/windows_exporter-0.31.3-amd64.exe"
+
+$InstallerPath = "C:\Temp\Installers"
+$ExporterPath  = "C:\Program Files\windows_exporter"
+$ExporterExe   = "$ExporterPath\windows_exporter-0.31.3-amd64.exe"
+$ServiceName   = "windows_exporter"
+
+# ------------------------------
+# Ensure admin privileges
+# ------------------------------
+if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
+    [Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    Write-Host "Please run this PowerShell script as Administrator!" -ForegroundColor Red
+    exit
+}
+
+# Create directories
+if (!(Test-Path -Path $InstallerPath)) { New-Item -ItemType Directory -Force -Path $InstallerPath | Out-Null }
+if (!(Test-Path -Path $ExporterPath)) { New-Item -ItemType Directory -Force -Path $ExporterPath | Out-Null }
+
+Write-Host "Starting MSSQL + Windows Exporter setup..." -ForegroundColor Cyan
+
+# ------------------------------
+# 1. Check and Install SQL Server
+# ------------------------------
+if (Get-Service -Name "MSSQLSERVER" -ErrorAction SilentlyContinue) {
+    Write-Host "SQL Server is already installed. Skipping installation..." -ForegroundColor Yellow
+} else {
+    Write-Host "Installing Microsoft SQL Server 2022 Developer Edition..."
+    Invoke-WebRequest -Uri $MSSQLInstallerUrl -OutFile "$InstallerPath\SQLServer2022.exe" -UseBasicParsing
+    Start-Process -FilePath "$InstallerPath\SQLServer2022.exe" `
+        -ArgumentList "/QS /ACTION=Install /FEATURES=SQLENGINE,REPLICATION /INSTANCENAME=MSSQLSERVER /SQLSVCACCOUNT='NT AUTHORITY\SYSTEM' /SQLSYSADMINACCOUNTS='Administrator'" `
+        -Wait
+}
+
+# ------------------------------
+# 2. Check and Install SSMS
+# ------------------------------
+$SSMSPath = "C:\Program Files\Microsoft SQL Server Management Studio 22"
+if (Test-Path $SSMSPath) {
+    Write-Host "SQL Server Management Studio 22 is already installed. Skipping installation..." -ForegroundColor Yellow
+} else {
+    Write-Host "Installing SQL Server Management Studio 22..."
+    Invoke-WebRequest -Uri $SSMSInstallerUrl -OutFile "$InstallerPath\SSMS-Setup.exe" -UseBasicParsing
+    Start-Process -FilePath "$InstallerPath\SSMS-Setup.exe" -ArgumentList "/install /quiet /norestart" -Wait
+}
+
+# ------------------------------
+# ------------------------------
+# 4. Create Windows Exporter Service
+# ------------------------------
+Write-Host "Creating Windows Exporter service..."
+
+# Stop and delete old service if it exists
+if (Get-Service -Name $ServiceName -ErrorAction SilentlyContinue) {
+    Write-Host "Existing service found. Removing it..."
+    Stop-Service -Name $ServiceName -Force -ErrorAction SilentlyContinue
+    sc.exe delete $ServiceName | Out-Null
+    Start-Sleep -Seconds 2
+}
+
+# Build the full command safely for cmd.exe
+$cmd = 'sc create windows_exporter binPath= "\"C:\Program Files\windows_exporter\windows_exporter-0.31.3-amd64.exe\" --collectors.enabled=\"cpu,logical_disk,net,os,service,system,textfile,mssql\" --web.listen-address=\":9182\"" start= auto DisplayName= "Windows Exporter"'
+
+# Run it through cmd.exe (PowerShell-safe)
+cmd.exe /c $cmd | Out-Null
+Start-Sleep -Seconds 2
+
+# Verify creation
+$svc = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
+if (-not $svc) {
+    Write-Host "Service creation failed. Check syntax or permissions." -ForegroundColor Red
+    exit
+}
+
+Write-Host "Windows Exporter service created successfully."
+Start-Service -Name $ServiceName -ErrorAction SilentlyContinue
+Start-Sleep -Seconds 2
+
+if ((Get-Service -Name $ServiceName -ErrorAction SilentlyContinue).Status -eq "Running") {
+    Write-Host "Windows Exporter service started successfully on port 9182!" -ForegroundColor Green
+} else {
+    Write-Host "Service created but not running. Please check logs or permissions." -ForegroundColor Yellow
+}
+# ------------------------------
+# 4. Start the service
+# ------------------------------
+Write-Host "Starting Windows Exporter service..."
+Start-Service -Name $ServiceName -ErrorAction SilentlyContinue
+Start-Sleep -Seconds 2
+
+# Check status
+$svc = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
+if ($svc.Status -eq "Running") {
+    Write-Host "Windows Exporter service started successfully on port 9182!" -ForegroundColor Green
+} else {
+    Write-Host "Failed to start Windows Exporter service. Please check Event Viewer for details." 
+}
+
+# ------------------------------
+# 5. Registry verification
+# ------------------------------
+$RegistryPath = "HKLM:\SYSTEM\CurrentControlSet\Services\$ServiceName"
+if (Test-Path $RegistryPath) {
+    $ImagePath = (Get-ItemProperty -Path $RegistryPath -Name ImagePath).ImagePath
+    Write-Host "Registry configuration verified:"
+    Write-Host $ImagePath
+} else {
+    Write-Host "Registry path not found - service may not have registered properly." 
+}
+
+
