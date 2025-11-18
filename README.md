@@ -116,7 +116,7 @@ Execute the following command to start the Windows Exporter and fetch SQL Server
 
 5.**Verify the Metrics Endpoint**
  - Press Open your browser and navigate to:
-[http://PublicIp:9182/metrics](http://PublicIp:9182/metrics)
+[http://PublicIp:9182/metrics](http://PrivateIp:9182/metrics)
 
 ---
 
@@ -187,7 +187,7 @@ scrape_configs:
  ```
 
   - Press Open your browser and navigate to:
- [http://PublicIp:9090/targets](http://PublicIp:9090/targets)
+ [http://PublicIp:9090/targets](http://PrivateIp:9090/targets)
 
 <img width="1366" height="768" alt="Screenshot (14)" src="https://github.com/user-attachments/assets/375314ac-7ba4-484e-83c6-b425f92b7654" />
 
@@ -225,7 +225,7 @@ Password: admin**
 
    - Choose Prometheus
 
-   - Set URL: http://publicip:9090
+   - Set URL: http://privateip:9090
 
    - Click Save & Test
 
