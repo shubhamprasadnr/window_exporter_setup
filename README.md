@@ -245,5 +245,8 @@ Password: admin**
 
 ✅ You’ll now see CPU, memory, and network and Mssql metrics visualized in Grafana.
 
+<img width="1342" height="570" alt="Screenshot 2025-11-14 145715" src="https://github.com/user-attachments/assets/89368d32-279b-4363-b649-a56f6bbb8acc" />
+
+
 ---
 
