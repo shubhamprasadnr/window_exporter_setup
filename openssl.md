@@ -36,7 +36,7 @@ cmd
 ```
 Expected Output:
 OpenSSL 3.6.0 1 Oct 2025 (Library: OpenSSL 3.6.0 1 Oct 2025)
-<img width="910" height="137" alt="Screenshot 2025-11-19 164624" src="https://github.com/user-attachments/assets/1e0084be-8e44-441d-bb24-ce063838a393" />
+<img width="1113" height="93" alt="Screenshot 2025-11-19 170330" src="https://github.com/user-attachments/assets/429fe73c-b4c3-478f-bae5-94fb4b468f95" />
 ---
 ## Generate SSL Certificates
 Run these commands in Command Prompt:
