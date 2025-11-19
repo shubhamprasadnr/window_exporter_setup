@@ -43,7 +43,7 @@ cmd
 ```
 #### 2. Generate certificate request
 ``` bash 
-"C:\Program Files\OpenSSL-Win64\bin\openssl.exe" req -new -key windows-exporter.key -out windows-exporter.csr -subj "/CN=localhost"
+"C:\Program Files\OpenSSL-Win64\bin\openssl.exe" req -new -key windows-exporter.key -out windows-exporter.csr -subj "/CN=<`privateip`>"
 ```
 #### 3. Generate self-signed certificate valid for 30 days
 ``` bash 
