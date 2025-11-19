@@ -8,6 +8,8 @@
 - Download OpenSSL
 - Visit: https://slproweb.com/products/Win32OpenSSL.html
 - Download the OpenSSL installer for your system (64-bit recommended)
+<img width="1366" height="768" alt="Screenshot (45)" src="https://github.com/user-attachments/assets/e839415f-6e91-4bac-b4a8-d3bd42ffaf6c" />
+
 ---
 ### Installation Steps
 Run the OpenSSL installer
@@ -22,6 +24,8 @@ During installation:
 - open Edit  Environment Variables:
 - Click on Environment variables 
 - Find "Path" and double-click
+<img width="635" height="581" alt="Screenshot 2025-11-19 164336" src="https://github.com/user-attachments/assets/5877585d-694f-4666-becc-55feb633a334" />
+
 - Click "New" and paste the copied path
 - Click "OK" to save
 ---
@@ -32,6 +36,7 @@ cmd
 ```
 Expected Output:
 OpenSSL 3.6.0 1 Oct 2025 (Library: OpenSSL 3.6.0 1 Oct 2025)
+<img width="910" height="137" alt="Screenshot 2025-11-19 164624" src="https://github.com/user-attachments/assets/1e0084be-8e44-441d-bb24-ce063838a393" />
 ---
 ## Generate SSL Certificates
 Run these commands in Command Prompt:
@@ -51,14 +56,18 @@ cmd
 ```
 ---
 #### Verify Certificate Generation
-   - Navigate to C:\Users\[YourUsername]\
+   - Navigate to C:\Users\[YourUsername]
   - You should find three files:
   -  windows-exporter.key (private key)
   -  windows-exporter.csr (certificate request)
   -  windows-exporter.crt (SSL certificate)
+    <img width="823" height="209" alt="Screenshot 2025-11-19 164918" src="https://github.com/user-attachments/assets/52959b16-455d-442c-8246-be83119d6f41" />
+    
 ---
-##### Create SSL directory
- "C:\Program Files\windows_exporter\ssl"
+
+#### Create SSL directory
+
+  "C:\Program Files\windows_exporter\ssl"
 
 #### Copy certificate files to secure location
 - copy windows-exporter.key to this path "C:\Program Files\windows_exporter\ssl\"
@@ -102,6 +111,5 @@ scrape_configs:
     scheme: https
     tls_config:
       insecure_skip_verify: true
-
  ```
       
