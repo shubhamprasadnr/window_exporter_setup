@@ -92,3 +92,16 @@ tls_server_config:
 https://localhost:9182/metrics
 ```
 ---
+## Modify your scrape yaml file 
+
+```bash 
+scrape_configs:
+  - job_name: "windows-exporter"
+    static_configs:
+      - targets: ["172.20.0.1:9182"]
+    scheme: https
+    tls_config:
+      insecure_skip_verify: true
+
+ ```
+      
