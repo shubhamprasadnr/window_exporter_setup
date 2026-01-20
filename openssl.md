@@ -40,28 +40,17 @@ OpenSSL 3.6.0 1 Oct 2025 (Library: OpenSSL 3.6.0 1 Oct 2025)
 ---
 ## Generate SSL Certificates
 Run these commands in Command Prompt:
-
-cmd
-#### 1. Generate private key
-``` bah 
-"C:\Program Files\OpenSSL-Win64\bin\openssl.exe" genrsa -out windows-exporter.key 2048
-```
-#### 2. Generate certificate request
 ``` bash 
-"C:\Program Files\OpenSSL-Win64\bin\openssl.exe" req -new -key windows-exporter.key -out windows-exporter.csr -subj "/CN=privateip"
-```
-#### 3. Generate self-signed certificate valid for 30 days
-``` bash 
-"C:\Program Files\OpenSSL-Win64\bin\openssl.exe" x509 -req -days 30 -in windows-exporter.csr -signkey windows-exporter.key -out windows-exporter.crt
+"C:\Program Files\OpenSSL-Win64\bin\openssl.exe" req -x509 -newkey rsa:2048 -nodes -keyout windows-exporter.key -out windows-exporter.crt -`<days 30>` -subj "/C=IN/ST=`<Maharashtra>`/L=`<Pune>`/O=`<Your Organization>`/CN=`<name>`" -addext "subjectAltName=IP:172.30.176.1" -addext "extendedKeyUsage=serverAuth"
 ```
 ---
 #### Verify Certificate Generation
    - Navigate to C:\Users\[YourUsername]
   - You should find three files:
   -  windows-exporter.key (private key)
-  -  windows-exporter.csr (certificate request)
   -  windows-exporter.crt (SSL certificate)
-    <img width="823" height="209" alt="Screenshot 2025-11-19 164918" src="https://github.com/user-attachments/assets/52959b16-455d-442c-8246-be83119d6f41" />
+    <img width="700" height="160" alt="Screenshot 2026-01-20 111753" src="https://github.com/user-attachments/assets/cb096b87-060c-4d7a-8837-40f64dc22754" />
+
     
 ---
 
@@ -87,7 +76,7 @@ tls_server_config:
   - Update Registry/Service Configuration
   - Use this path in your Windows Exporter service configuration:
 ```bash 
-"C:\Program Files\windows_exporter\windows_exporter-0.31.3-amd64.exe" --collectors.enabled="cpu,logical_disk,net,os,service,system,textfile,mssql" --web.listen-address=:9182 --web.config.file="C:\Program Files\windows_exporter\web-config.yml"
+"C:\Program Files\windows_exporter\windows_exporter-0.31.3-amd64.exe" --collectors.enabled="cpu,logical_disk,net,os,service,system,textfile,mssql" --web.listen-address=:9182 --web.config.file="C:\Program Files\windows_exporter\ssl\web-config.yml"
 ```
 ---
 ###  Start Windows Exporter Service
@@ -96,20 +85,45 @@ tls_server_config:
    - Find "windows_exporter" service
    - Right-click and select "Start"
 ---
+
 ###  Verify HTTPS Access
 ``` bash 
 https://localhost:9182/metrics
+```
+---
+
+### Create a file windows-exporter.crt in wsl ubuntu  
+
+     notepad windows-exporter.crt 
+
+     copy the certificate key to this file windows-exporter.crt 
+    
+<img src="https://github.com/user-attachments/assets/a804592b-cd22-40de-b424-499585c027e8" alt="Screenshot 2026-01-20 110956" width="613" height="431" />
+
+---
+### Mounting SSL Certificate in vmagent
+ Used in Production Environment
+
+- Mounts your local certificate file into the vmagent container
+
+```bash
+ volumes:
+      - ./scrape.yml:/etc/vmagent/scrape.yml:ro
+      - /<path>/windows-exporter.crt:/etc/vmagent/ssl/windows-exporter.crt:ro
 ```
 ---
 ## Modify your scrape yaml file 
 
 ```bash 
 scrape_configs:
-  - job_name: "windows-exporter"
-    static_configs:
-      - targets: ["172.20.0.1:9182"]
+  - job_name: "DESKTOP-6L786HE"
+    scrape_interval: 15s
     scheme: https
     tls_config:
-      insecure_skip_verify: true
+      ca_file: /etc/vmagent/ssl/windows-exporter.crt
+    static_configs:
+      - targets:
+          - "172.30.176.1:9182"
  ```
+ ---
       
